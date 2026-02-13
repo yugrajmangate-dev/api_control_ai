@@ -62,9 +62,7 @@ try:
 except ImportError as e:
     # Try importing again with more specific error handling
     try:
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent))
+        sys.path.insert(0, str(current_dir))
         from rl.env import EpiControlEnv
         from rl.utils import discretize_state
         from rl.load_agent import load_trained_agent
@@ -87,7 +85,7 @@ except ImportError as e:
 # ==================== PAGE CONFIGURATION ====================
 st.set_page_config(
     page_title="EpiControl AI | Neural Nexus",
-    page_icon="",  # Remove emoji for professional look
+    page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -1044,9 +1042,6 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
                 # Update progress bar
                 if day % update_interval == 0 or day == DAYS - 1:
                     progress_bar.progress((day + 1) / DAYS, text=f"Day {day+1}/{DAYS}")
-                
-                if day % update_interval == 0 or day == DAYS - 1:
-                    progress_bar.progress((day + 1) / DAYS, text=f"Day {day}/{DAYS}")
             
             progress_bar.empty()
         
@@ -1715,48 +1710,47 @@ with tab2:
        - Mutation timeline marks evolution events
     
     4. **Run Simulation**
-           - Click "Run Simulation" button
-           - Watch real-time progress
-           - Analyze results in interactive charts
-           - View predicted symptom patterns if enabled
-        
-        ### Symptom Prediction Feature
-        The Symptom Prediction Engine analyzes your selected virus parameters and compares them with 6 major historical pandemics to predict:
-        - Primary and secondary symptom profiles
-        - Severity distributions and onset timelines
-        - Age-specific impact predictions
-        - Potential severe complications
-        
-        Based on the 3M (Monitoring-Modelling-Managing) epidemiological framework.
-        
-        ### For AI Mode
-        Before using AI (RL) Policy mode, train the agent:
-        ```bash
-        python rl/train.py
-        ```
-        This creates a Q-table with learned optimal policies.
-        """)
+       - Click "Run Simulation" button
+       - Watch real-time progress
+       - Analyze results in interactive charts
+       - View predicted symptom patterns if enabled
     
-    with tab3:
-        st.markdown("""
-        ### Project Information
-        
-        **Project:** EpiControl AI - Advanced Epidemic Simulation Platform  
-        **Team:** Neural Nexus  
-        
-        
-        ### Technology Stack
-        - **Bckend:** Python 3.8+, NumPy
-        - **RL Framework:** Custom Q-Learning implementation
-        - **Visualization:** Plotly, Streamlit
-        - **Modeling:** Agent-based SEIR simulation
-        
-        ### Contact
-        For questions or collaboration opportunities, contact Team Neural Nexus.
-        
-        ### License
-        This project is developed for educational and research purposes.
-        """)
+    ### Symptom Prediction Feature
+    The Symptom Prediction Engine analyzes your selected virus parameters and compares them with 6 major historical pandemics to predict:
+    - Primary and secondary symptom profiles
+    - Severity distributions and onset timelines
+    - Age-specific impact predictions
+    - Potential severe complications
+    
+    Based on the 3M (Monitoring-Modelling-Managing) epidemiological framework.
+    
+    ### For AI Mode
+    Before using AI (RL) Policy mode, train the agent:
+    ```bash
+    python rl/train.py
+    ```
+    This creates a Q-table with learned optimal policies.
+    """)
+
+with tab3:
+    st.markdown("""
+    ### Project Information
+    
+    **Project:** EpiControl AI - Advanced Epidemic Simulation Platform  
+    **Team:** Neural Nexus  
+    
+    ### Technology Stack
+    - **Backend:** Python 3.8+, NumPy
+    - **RL Framework:** Custom Q-Learning implementation
+    - **Visualization:** Plotly, Streamlit
+    - **Modeling:** Agent-based SEIR simulation
+    
+    ### Contact
+    For questions or collaboration opportunities, contact Team Neural Nexus.
+    
+    ### License
+    This project is developed for educational and research purposes.
+    """)
 
 # ==================== SIDEBAR FOOTER ====================
 st.sidebar.markdown("---")

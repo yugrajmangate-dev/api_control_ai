@@ -1,3 +1,12 @@
+POLICIES = {
+    "No Intervention": {"mask_mandate": False, "school_closure": False, "vaccination": False},
+    "Masks Only": {"mask_mandate": True, "school_closure": False, "vaccination": False},
+    "School Closure": {"mask_mandate": False, "school_closure": True, "vaccination": False},
+    "Vaccination Only": {"mask_mandate": False, "school_closure": False, "vaccination": True},
+    "Full Intervention": {"mask_mandate": True, "school_closure": True, "vaccination": True}
+}
+
+
 def apply_policy(agent, policy):
     """
     Modifies agent behavior based on active policies (single agent)
