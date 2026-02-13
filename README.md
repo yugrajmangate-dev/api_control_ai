@@ -1,6 +1,6 @@
 # 🦠 EpiControl AI - Advanced Epidemic Intelligence Platform
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://yugrajmangate-dev-api-control-ai-app-xxxxx.streamlit.app)
+[![Streamlit App]([https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://yugrajmangate-dev-api-control-ai-app-xxxxx.streamlit.app](https://apicontrolai.streamlit.app/))
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub](https://img.shields.io/badge/GitHub-yugrajmangate--dev-blue)](https://github.com/yugrajmangate-dev/api_control_ai)
