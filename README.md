@@ -1,571 +1,173 @@
-# 🦠 EpiControl AI - Advanced Epidemic Intelligence Platform
+# EpiControl AI
 
-[![Streamlit App](https://apicontrolai.streamlit.app/)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub](https://img.shields.io/badge/GitHub-yugrajmangate--dev-blue)](https://github.com/yugrajmangate-dev/api_control_ai)
+An epidemic simulation and control platform that combines SEIR epidemiological modeling with reinforcement learning for policy optimization. Built for the PRAKALP 2026 Hackathon.
 
-> **Developed for PRAKALP 2026 Hackathon** | Advanced SEIR Epidemic Modeling with AI-Powered Decision Making
+**Live Dashboard:** [https://apicontrolai.streamlit.app](https://apicontrolai.streamlit.app/)
 
----
-
-## 🌟 Live Demo
-
-**🔗 [Try it now!](https://yugrajmangate-dev-api-control-ai-app-xxxxx.streamlit.app)** _(Deploy to get actual URL)_
-
-**📦 [GitHub Repository](https://github.com/yugrajmangate-dev/api_control_ai)**
+**Repository:** [github.com/yugrajmangate-dev/api_control_ai](https://github.com/yugrajmangate-dev/api_control_ai)
 
 ---
 
-## 📋 Table of Contents
+## What It Does
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Technology Stack](#technology-stack)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Features in Detail](#features-in-detail)
-- [Deployment](#deployment)
-- [Team](#team)
-- [License](#license)
+EpiControl AI simulates disease outbreaks using an agent-based SEIR (Susceptible-Exposed-Infected-Recovered) model. Users can configure pathogen parameters, apply intervention policies, and watch how an epidemic unfolds across a population — then let a trained Q-Learning agent find the optimal policy automatically.
 
----
-
-## 🎯 Overview
-
-**EpiControl AI** is a sophisticated epidemic simulation and control platform that combines traditional **SEIR (Susceptible-Exposed-Infected-Recovered)** epidemiological modeling with cutting-edge AI technologies. Built for the PRAKALP 2026 hackathon, this platform empowers public health officials, researchers, and policymakers to:
-
-- **Simulate** disease outbreaks with realistic parameters
-- **Visualize** infection spread through interactive heatmaps and charts
-- **Predict** symptom patterns using ML-based historical analysis
-- **Optimize** intervention strategies using reinforcement learning
-- **Compare** policy effectiveness across multiple scenarios
-- **Track** virus mutations and their epidemiological impact
+Core capabilities:
+- Simulate outbreaks with WHO-verified pathogen parameters (COVID-19, SARS, Measles, Influenza, Ebola)
+- Apply interventions: mask mandates, school closures, vaccination drives
+- Compare 5 policy strategies side-by-side with quantified outcomes
+- Track virus mutations that dynamically alter transmission and mortality
+- Predict symptom profiles for emerging viruses based on historical pandemic data
+- Visualize infection spread through SEIR curves, heatmaps, and spatial scatter plots
 
 ---
 
-## ✨ Key Features
+## Quick Start
 
-### 🧬 **Mutation Modeling**
-- Real-time virus evolution tracking
-- Dynamic R₀ and transmission rate changes
-- Mutation severity classification (mild/moderate/severe)
-- Interactive timeline visualization
-
-### 🤖 **AI-Powered Control**
-- Deep Q-Learning agent for policy optimization
-- Automated intervention decisions
-- Multi-objective reward function (minimize deaths, maximize economy)
-- Pre-trained model with 500+ episodes
-
-### 🔬 **ML-Based Symptom Prediction**
-- Historical pandemic database (COVID-19, SARS, MERS, H1N1, Ebola, Flu)
-- Similarity-based pattern matching
-- Prevalence and onset prediction
-- Confidence scoring system
-
-### 🗺️ **Spatial Analysis**
-- Agent-based geographic modeling
-- Infection density heatmaps
-- Real-time population distribution
-- Proximity-based transmission
-
-### 🏙️ **Indian City Presets**
-- 10 metropolitan cities (Mumbai, Delhi, Bangalore, etc.)
-- Realistic population density parameters
-- City-specific contact multipliers
-- Healthcare capacity modeling
-
-### 🌐 **Multi-Language Support**
-- 11 languages including 7 Indian languages
-- Hindi, Kannada, Marathi, Tamil, Telugu, Gujarati
-- English, Spanish, French, German, Chinese
-
-### 📊 **WHO-Verified Data**
-- Official disease parameters database
-- Multiple pathogen models
-- Peer-reviewed epidemiological data
-
----
-
-## 🛠️ Technology Stack
-
-**Frontend:**
-- Streamlit (Interactive UI)
-- Plotly (Advanced visualizations)
-- Custom CSS animations
-
-**Backend:**
-- Python 3.10+
-- NumPy (Numerical computing)
-- Pandas (Data manipulation)
-
-**AI/ML:**
-- PyTorch (Deep Q-Learning)
-- OpenAI Gym (RL environment)
-- Custom similarity algorithms
-
-**Data:**
-- WHO parameters
-- Historical pandemic databases
-- Custom virus configurations
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-- Python 3.10 or higher
-- pip package manager
-- Git
-
-### Quick Start
+### Run Locally
 
 ```bash
-# Clone the repository
 git clone https://github.com/yugrajmangate-dev/api_control_ai.git
 cd api_control_ai
-
-# Create virtual environment
 python -m venv .venv
-
-# Activate virtual environment
-# Windows:
-.venv\Scripts\activate
-# macOS/Linux:
-source .venv/bin/activate
-
-# Install dependencies
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS/Linux
 pip install -r requirements.txt
-
-# Run the application
 streamlit run app.py
 ```
 
-The app will open at `http://localhost:8501`
+Opens at `http://localhost:8501`.
+
+### Train the RL Agent (Optional)
+
+The AI mode requires a pre-trained Q-table. To train locally:
+
+```bash
+python rl/train.py
+```
+
+Trains for 200 episodes and saves the Q-table to `rl/q_table_covid19.pkl`.
 
 ---
 
-## 📖 Usage
+## Usage
 
-### Basic Simulation
-
-1. **Select Language** (Sidebar)
-2. **Choose City** (Custom or Indian City Preset)
-3. **Configure Parameters:**
-   - Population size (1,000 - 50,000)
-   - Simulation days (30 - 120)
-4. **Select Pathogen** (Custom models or WHO database)
-5. **Enable Features:**
-   - Mutations ✓
-   - Spatial visualizations ✓
-   - Symptom prediction ✓
-6. **Run Simulation** → Analyze Results
-
-### Control Modes
-
-**Manual Policy:**
-- Manually toggle interventions
-- See immediate impact
-- Full control over timing
-
-**AI (RL) Policy:**
-- Automated decision-making
-- Optimized intervention timing
-- Balance health vs. economy
-
-**Policy Comparison:**
-- Test 5 strategies simultaneously
-- Side-by-side metrics
-- Identify best approach
+1. **Set parameters** — population size, simulation duration, and city preset (10 Indian metros available)
+2. **Pick a pathogen** — choose from custom virus models or the WHO database
+3. **Enable features** — toggle virus mutations and symptom prediction
+4. **Select control mode:**
+   - **Manual** — you choose which interventions to apply
+   - **AI (Q-Learning)** — the trained agent selects policies each day
+   - **Policy Comparison** — runs all 5 strategies and ranks them
+5. **Run the simulation** and analyze the results
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 epicontrol_ai/
-├── app.py                          # Main Streamlit application
-├── chatbot.py                      # AI assistant
-├── translations.py                 # Multi-language support
+├── app.py                      # Streamlit dashboard (main entry point)
+├── chatbot.py                  # In-app conversational assistant
+├── translations.py             # Multi-language support (11 languages)
 │
 ├── config/
-│   └── base_params.py             # Default disease parameters
+│   └── base_params.py          # Age-group parameters (immunity, severity, contact rates)
 │
 ├── data/
-│   ├── virus_configs.py           # Custom virus models
-│   └── who_params.json            # WHO-verified data
+│   ├── virus_configs.py        # COVID-19, Influenza, SARS-like configs
+│   └── who_params.json         # WHO-sourced disease parameters
 │
 ├── env/
-│   ├── city.py                    # Indian city configurations
-│   ├── mutation.py                # Mutation tracking system
-│   ├── policies.py                # Intervention policies
-│   ├── population.py              # Agent generation
-│   └── seir.py                    # SEIR model engine
+│   ├── seir.py                 # SEIR state transition engine
+│   ├── population.py           # Agent population generator
+│   ├── mutation.py             # Virus mutation system
+│   ├── policies.py             # Intervention policy definitions
+│   └── city.py                 # Indian city presets (Mumbai, Delhi, etc.)
 │
 ├── rl/
-│   ├── agent.py                   # Deep Q-Learning agent
-│   ├── env.py                     # Gym environment
-│   ├── train.py                   # Training script
-│   └── load_agent.py              # Pre-trained model loader
+│   ├── agent.py                # Q-Learning agent
+│   ├── env.py                  # Gymnasium RL environment
+│   ├── train.py                # Training loop
+│   ├── load_agent.py           # Load pre-trained Q-table
+│   └── utils.py                # State discretization
 │
 ├── simulation/
-│   ├── metrics.py                 # Performance tracking
-│   └── run.py                     # Simulation runner
-│
-├── visualization/
-│   ├── plotly_plots.py            # Interactive charts
-│   └── plots.py                   # Matplotlib charts
+│   └── metrics.py              # Rt, attack rate, incidence tracking
 │
 ├── symptom_prediction/
-│   ├── historical_data.py         # Pandemic database (6 diseases)
-│   ├── predictor.py               # ML prediction engine
-│   └── __init__.py
+│   ├── predictor.py            # Similarity-based symptom prediction
+│   └── historical_data.py      # 6 historical pandemic datasets
 │
-├── .streamlit/
-│   └── config.toml                # Theme configuration
+├── visualization/
+│   └── plotly_plots.py         # SEIR curves, heatmaps, scatter, mutation timeline
 │
-├── requirements.txt               # Python dependencies
-├── .gitignore                     # Git exclusions
-├── README.md                      # This file
-└── README_DEPLOYMENT.md           # Deployment guide
-```
-
----
-  - Ebola
-- Each includes source citations and notes
-
-#### **6. Transfer Learning Demo** 🔄
-- **File:** `rl/evaluate_transfer.py` (enhanced)
-- **Features:**
-  - Detailed City A → City B comparison
-  - Performance metrics (reward, peak infected, recovered)
-  - Action distribution analysis
-  - Results saved to pickle file
-
-#### **7. Updated Training Script** 🤖
-- **File:** `rl/train.py` (fixed)
-- **Improvements:**
-  - Proper virus configuration integration
-  - Metadata saving (includes virus config, episodes, etc.)
-  - Better progress reporting
-  - Virus-specific Q-table filenames
-
----
-
-## 🚀 How to Use
-
-### **Step 1: Install Dependencies**
-```bash
-pip install -r requirements.txt
-```
-
-### **Step 2: Train the RL Agent**
-```bash
-python rl/train.py
-```
-This will:
-- Train for 200 episodes
-- Save Q-table to `rl/q_table_covid-19.pkl`
-- Save metadata to `rl/q_table_covid-19_metadata.pkl`
-
-### **Step 3: Run the Interactive Dashboard**
-```bash
-streamlit run app.py
-```
-
-Dashboard features:
-- **Virus Selection:** Choose from custom models or WHO database
-- **Mutation Settings:** Enable/disable with adjustable thresholds
-- **Control Modes:**
-  - **Manual:** Select your own policies
-  - **AI (RL):** Let the trained agent decide
-  - **Policy Comparison:** Compare 5 strategies side-by-side
-- **Visualizations:**
-  - SEIR curves (overall + age-stratified)
-  - Mutation timeline (if mutations occurred)
-  - Infection heatmap (geographic hotspots)
-  - Spatial scatter plot (agent positions)
-
-### **Step 4: Test Transfer Learning**
-```bash
-python rl/evaluate_transfer.py
-```
-
-Shows how a policy trained on City A (1000 population) performs on City B (1500 population).
-
-### **Step 5: Run Tests**
-```bash
-python test_features.py
-```
-
-Comprehensive test suite covering:
-- Module imports
-- Spatial population generation
-- Mutation system
-- Heatmap visualization
-- SEIR with mutation tracking
-- WHO parameters
-- RL agent
-
----
-
-## 📊 Key Features Demonstrated
-
-### **Mutation Modeling**
-```python
-# Automatic mutation detection
-should_mutate, reason = check_mutation_trigger(population, day=20)
-
-# Apply mutation
-new_config = apply_mutation(virus_config, mutation_severity="moderate")
-
-# Track all events
-mutation_tracker = MutationTracker()
-mutation_event = mutation_tracker.log_mutation(day, reason, old_config, new_config)
-```
-
-### **Spatial Visualization**
-```python
-# Generate population with coordinates
-population = generate_population(1000, virus_config, spatial=True)
-
-# Create heatmap
-heatmap_fig = plot_infection_heatmap(population, grid_size=20)
-
-# Show spatial distribution
-scatter_fig = plot_spatial_scatter(population)
-```
-
-### **Policy Comparison**
-The dashboard automatically runs 5 different policies:
-1. No Intervention
-2. Masks Only
-3. School Closure Only
-4. Vaccination Only
-5. Full Intervention (all combined)
-
-Then displays:
-- Peak infections
-- Total deaths
-- Economic cost
-- Final recovered count
-
----
-
-## 🎯 Hackathon Demo Script
-
-### **1. Show Mutation Event (2 min)**
-1. Open dashboard
-2. Select "COVID-19" virus
-3. Enable mutations (threshold: 30%)
-4. Choose "Manual Policy" with NO interventions
-5. Run simulation
-6. **Point out:** Mutation warnings appearing, parameters changing
-7. Show mutation timeline graph
-
-### **2. Show Geographic Heatmap (1 min)**
-1. After simulation completes
-2. Check "Show Infection Heatmap"
-3. **Explain:** Red zones = outbreak hotspots
-4. **Use case:** Targeted lockdowns instead of city-wide
-
-### **3. Show Policy Comparison (2 min)**
-1. Switch to "Policy Comparison" mode
-2. Run simulation (progress bar shows 5 comparisons)
-3. **Show:** Bar charts comparing all strategies
-4. **Highlight:** Best policy identified automatically
-5. **Explain:** AI/RL reduces deaths by X% vs no intervention
-
----
-
-## 📁 File Structure
-
-```
-EpiControl-AI/
-├── app.py                          # Enhanced Streamlit dashboard ✨
 ├── requirements.txt
-├── test_features.py               # Comprehensive test suite ✨
-├── FEATURE_GUIDE.md              # Complete feature documentation ✨
-├── PRESENTATION_GUIDE.md         # 15-minute demo script ✨
-├── README.md                      # This file ✨
-│
-├── config/
-│   └── base_params.py
-│
-├── data/
-│   ├── virus_configs.py           # Custom virus models
-│   └── who_params.json           # WHO-verified parameters ✨
-│
-├── env/
-│   ├── city.py
-│   ├── mutation.py               # Complete mutation system ✨
-│   ├── policies.py
-│   ├── population.py             # Enhanced with spatial coords ✨
-│   └── seir.py                   # Updated with mutation support ✨
-│
-├── rl/
-│   ├── agent.py
-│   ├── env.py
-│   ├── evaluate_transfer.py      # Enhanced transfer demo ✨
-│   ├── load_agent.py
-│   ├── test_env.py
-│   ├── train.py                  # Fixed and enhanced ✨
-│   └── utils.py
-│
-├── simulation/
-│   ├── metrics.py
-│   └── run.py
-│
-└── visualization/
-    ├── plotly_plots.py           # 4 new visualization functions ✨
-    └── plots.py
-
-✨ = New or significantly enhanced
+├── Procfile                    # Streamlit Cloud deployment
+├── runtime.txt                 # Python 3.10.12
+└── .streamlit/
+    └── config.toml             # Dark theme config
 ```
 
 ---
 
-## 🏆 Competitive Advantages
+## Key Technical Details
 
-### **What Makes This Unique:**
+### SEIR Model
 
-1. **Only platform combining:**
-   - SEIR epidemiological modeling
-   - Mutation event tracking
-   - Spatial/geographic visualization
-   - RL-based policy optimization
+Each individual in the population is an agent with attributes: age group, immunity, contact rate, spatial coordinates, and disease state. State transitions follow standard SEIR dynamics:
 
-2. **Innovation Highlights:**
-   - Dynamic parameter adaptation (virus evolves during simulation)
-   - Geographic hotspot detection (heatmaps)
-   - Automated policy comparison (5 strategies tested simultaneously)
-   - Transfer learning between cities
-   - WHO-verified data integration
+- **S → E** — contact with an infected agent, probability = `beta * contact_rate * (1 - immunity)`
+- **E → I** — after incubation period (pathogen-specific, e.g. 5 days for COVID-19)
+- **I → R** — after infectious period (pathogen-specific, e.g. 7 days for COVID-19)
 
-3. **Practical Impact:**
-   - Early mutation detection
-   - Targeted interventions (saves economy)
-   - Data-driven policy decisions
-   - Cost-benefit analysis
+Contacts per day are calibrated from the WHO POLYMOD study: children average 10.4 contacts, adults 8.0.
 
----
+### Mutation System
 
-## 📈 Expected Results
+When infection rates cross configurable thresholds, mutations can trigger — modifying R0, transmission rate, and mortality with biologically-constrained changes. A 15-day cooldown prevents unrealistic mutation frequency.
 
-### **Without Mutations:**
-- Peak Infected: ~250 (25% of population)
-- Total Deaths: ~50
-- Predictable SEIR curve
+### Reinforcement Learning
 
-### **With Mutations (Moderate):**
-- Peak Infected: ~380 (38%) — **52% increase**
-- Total Deaths: ~76 — **52% increase**
-- R0 increases from 2.5 → 3.8
-- Multiple peaks on SEIR curve
+The Q-Learning agent operates over a 5-action discrete space (no action, masks, school closure, masks + school closure, vaccination). State is discretized from the observation vector: `[infected_ratio, child_infected, adult_infected, hospital_load, economic_cost]`. The reward balances infection reduction against economic cost.
 
-### **Policy Comparison:**
-- No Intervention: 380 peak, 76 deaths
-- Masks Only: 280 peak, 56 deaths (-26% deaths)
-- Full Intervention: 120 peak, 24 deaths (-68% deaths)
-- **AI/RL typically matches "Full Intervention" with lower economic cost**
+### Symptom Prediction
 
-*(Actual results vary due to stochastic nature)*
+Uses weighted Euclidean distance to compare a new virus's epidemiological parameters (R0, CFR, incubation period, etc.) against 6 historical pandemics (COVID-19, SARS, MERS, H1N1, Ebola, Seasonal Flu). Outputs predicted symptom profiles with prevalence estimates and confidence scores.
 
 ---
 
-## 🐛 Troubleshooting
+## Intervention Policies
 
-### **"No module named 'env.mutation'"**
-Make sure you're in the correct directory. The `env/` folder should be in the same directory as `app.py`.
-
-### **Streamlit shows blank page**
-Check the terminal for errors. Make sure all dependencies are installed:
-```bash
-pip install streamlit plotly numpy gym
-```
-
-### **Q-table not found error**
-Run training first:
-```bash
-python rl/train.py
-```
-
-### **Mutations not appearing**
-- Check "Enable Virus Mutations" is checked
-- Try lowering mutation threshold to 0.2 (20%)
-- Run for more days (60+)
-- Use "No Intervention" policy to allow high infection rates
+| Policy | Effect |
+|---|---|
+| Mask Mandate | 40% reduction in contact rate for all agents |
+| School Closure | Additional 70% contact reduction for children |
+| Vaccination | Immunity boost (50–85% effectiveness, scaled by pathogen severity) |
 
 ---
 
-## 💡 Future Enhancements
+## Troubleshooting
 
-### **Short-term (if you have time before hackathon):**
-- [ ] Add poster with architecture diagram
-- [ ] Record backup demo video (in case live demo fails)
-- [ ] Create comparison charts showing AI vs Manual
+**Q-table not found (AI mode):**
+Train locally first with `python rl/train.py`. The dashboard falls back to manual mode if no Q-table exists.
 
-### **Long-term (future scope for presentation):**
-- Deep RL with PyTorch (DQN)
-- Real mobility data integration
-- Multi-city modeling with travel
-- Hospital capacity constraints
-- Vaccine supply optimization
+**Mutations not appearing:**
+Enable "Virus Mutations" in the sidebar. Use no intervention to let infection rates climb above the mutation threshold. Run for 60+ days.
+
+**Module import errors:**
+Run from the project root directory where `app.py` is located. Install all dependencies with `pip install -r requirements.txt`.
 
 ---
 
-## 📞 Team Contact
+## Team
 
-- **Team:** Neural Nexus
-- **Leader:** Parth Bhad
-- **Email:** parthbhad2@gmail.com
-- **Phone:** 9067829174
-- **Institution:** Hope Foundation's I²IT, Pune
+**Team Neural Nexus** — PRAKALP 2026, Hope Foundation's I²IT, Pune
+
+- Team Lead: Parth Bhad (parthbhad2@gmail.com)
 
 ---
 
-## 🎓 Tech Stack
+## License
 
-- **Language:** Python 3.8+
-- **RL Framework:** Custom Q-Learning (NumPy, Gym)
-- **Visualization:** Plotly, Streamlit
-- **Data:** JSON (WHO parameters)
-- **Modeling:** NumPy (SEIR equations)
-
----
-
-## 📝 Citation
-
-If using this project, please cite:
-```
-Neural Nexus Team (2026). EpiControl AI: Advanced Epidemic Simulation 
-with Mutation Tracking and RL-based Policy Optimization. 
-PRAKALP 2026, I²IT Pune.
-```
-
----
-
-## 📜 License
-
-Created for PRAKALP 2026 Hackathon - Educational Use
-
----
-
-## 🎉 Status: **COMPETITION READY!**
-
-All critical features implemented:
-- ✅ Mutation modeling
-- ✅ Spatial heatmaps
-- ✅ Policy comparison
-- ✅ WHO integration
-- ✅ Transfer learning demo
-- ✅ Enhanced dashboard
-- ✅ Complete documentation
-
-**Good luck at the hackathon! 🚀**
-
----
-
-*Last Updated: January 29, 2026*
+Educational use — created for PRAKALP 2026 Hackathon.
