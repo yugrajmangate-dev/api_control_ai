@@ -40,26 +40,36 @@ except ImportError as e:
     st.info("Please install required packages: pip install streamlit numpy pandas matplotlib plotly")
     st.stop()
 
-# Optional imports
+# Optional imports - RL features
 try:
     from rl.env import EpiControlEnv
     from rl.utils import discretize_state
     from rl.load_agent import load_trained_agent
+    FEATURES_AVAILABLE['rl'] = True
 except ImportError as e:
-    st.warning(f"RL features unavailable: {str(e)}")
-    FEATURES_AVAILABLE['rl'] = False
-    EpiControlEnv = None
-    discretize_state = None
-    load_trained_agent = None
+    # Try importing again with more specific error handling
+    try:
+        import sys
+        from pathlib import Path
+        sys.path.insert(0, str(Path(__file__).parent))
+        from rl.env import EpiControlEnv
+        from rl.utils import discretize_state
+        from rl.load_agent import load_trained_agent
+        FEATURES_AVAILABLE['rl'] = True
+    except Exception as e2:
+        FEATURES_AVAILABLE['rl'] = False
+        EpiControlEnv = None
+        discretize_state = None
+        load_trained_agent = None
 
+# Optional imports - Symptom prediction
 try:
     from symptom_prediction import SymptomPredictor, HISTORICAL_PANDEMICS
+    FEATURES_AVAILABLE['symptom_prediction'] = True
 except ImportError as e:
-    st.warning(f"Symptom prediction unavailable: {str(e)}")
     FEATURES_AVAILABLE['symptom_prediction'] = False
     SymptomPredictor = None
     HISTORICAL_PANDEMICS = None
-    st.stop()
 
 # ==================== PAGE CONFIGURATION ====================
 st.set_page_config(
@@ -517,7 +527,10 @@ if 'language' not in st.session_state:
 if 'chatbot_context' not in st.session_state:
     st.session_state.chatbot_context = 'welcome'
 if 'symptom_predictor' not in st.session_state:
-    st.session_state.symptom_predictor = SymptomPredictor()
+    if FEATURES_AVAILABLE['symptom_prediction'] and SymptomPredictor is not None:
+        st.session_state.symptom_predictor = SymptomPredictor()
+    else:
+        st.session_state.symptom_predictor = None
 if 'show_symptom_prediction' not in st.session_state:
     st.session_state.show_symptom_prediction = False
 
@@ -563,7 +576,7 @@ map_view = st.radio(
 
 if map_view == "World Map (Flat)":
     world_map_fig = plot_global_epidemic_map()
-    st.plotly_chart(world_map_fig, use_container_width=True)
+    st.plotly_chart(world_map_fig, use_container_width=True, key="dashboard_world_map")
     
     # Add quick stats
     col1, col2, col3, col4 = st.columns(4)
@@ -577,7 +590,7 @@ if map_view == "World Map (Flat)":
         st.metric("Critical Regions", "12", "Very High Alert")
 else:
     globe_fig = plot_globe_view_3d()
-    st.plotly_chart(globe_fig, use_container_width=True)
+    st.plotly_chart(globe_fig, use_container_width=True, key="dashboard_globe_view")
     st.info("**Tip**: Drag to rotate the globe and explore different regions!")
 
 st.markdown("---")
@@ -911,17 +924,23 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
             # Apply policy once before loop for efficiency
             apply_policy_batch(population, policy, virus_config)
             
+            # Record initial state (day 0)
+            generation_time = virus_config.get("incubation_days", 5) + virus_config.get("infectious_days", 7) / 2
+            record_metrics(metrics, population, 
+                          mortality_rate=virus_config.get("mortality_rate", 0.02),
+                          generation_time=generation_time)
+            
             for day in range(DAYS):
-                # Calculate generation time from virus config
-                generation_time = virus_config.get("incubation_days", 5) + virus_config.get("infectious_days", 7) / 2
-                record_metrics(metrics, population, 
-                              mortality_rate=virus_config.get("mortality_rate", 0.02),
-                              generation_time=generation_time)
-
+                # Update SEIR first
                 if enable_mutations and mutation_tracker:
                     update_seir(population, mutation_tracker=mutation_tracker, current_day=day)
                 else:
                     update_seir(population)
+                
+                # Record metrics after update
+                record_metrics(metrics, population, 
+                              mortality_rate=virus_config.get("mortality_rate", 0.02),
+                              generation_time=generation_time)
 
             # Calculate summary metrics
             peak_infected = max(metrics["overall"]["I"]) if metrics["overall"]["I"] else 0
@@ -944,61 +963,26 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
             }
             
             progress_bar.empty()
-            
-            # ====== BEAUTIFUL RESULTS DISPLAY ======
-            st.markdown("---")
-            st.markdown("## Policy Effectiveness Comparison")
-            
-            # Metric cards for best policy
-            best_policy = min(comparison_results.keys(), 
-                             key=lambda k: comparison_results[k]["total_deaths"])
-            
-            st.markdown(f"""
-            <div class="success-box">
-                <h3>Recommended Strategy: {best_policy}</h3>
-                <p>This strategy resulted in the lowest number of deaths.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Display metrics in columns
-            col1, col2, col3, col4 = st.columns(4)
-            
-            with col1:
-                st.metric(
-                    "Peak Infected",
-                    f"{int(comparison_results[best_policy]['peak_infected'])}",
-                    delta=None
-                )
-            
-            with col2:
-                st.metric(
-                    "Total Deaths",
-                    f"{comparison_results[best_policy]['total_deaths']}",
-                    delta=None
-                )
-            
-            with col3:
-                st.metric(
-                    "Final Recovered",
-                    f"{int(comparison_results[best_policy]['final_recovered'])}",
-                    delta=None
-                )
-            
-            with col4:
-                st.metric(
-                    "Economic Cost",
-                    f"${comparison_results[best_policy]['economic_cost']:,.0f}",
-                    delta=None
-                )
-            
-            # Display comparison chart
-            comparison_fig = plot_policy_comparison(comparison_results)
-            st.plotly_chart(comparison_fig, use_container_width=True)
-            
-            # Show detailed SEIR for best policy
-            st.markdown("### SEIR Dynamics: Best Strategy")
-            fig = plot_seir_plotly(comparison_results[best_policy]["metrics"])
-            st.plotly_chart(fig, use_container_width=True)
+        
+        # Store results in session state for policy comparison
+        best_policy = min(comparison_results.keys(), 
+                         key=lambda k: comparison_results[k]["total_deaths"])
+        
+        st.session_state.simulation_results = {
+            'metrics': comparison_results[best_policy]["metrics"],
+            'population': population,
+            'virus_config': virus_config,
+            'POP_SIZE': POP_SIZE,
+            'mutation_tracker': None,
+            'comparison_results': comparison_results,
+            'best_policy': best_policy,
+            'mode': 'policy_comparison'
+        }
+        
+        # Mark simulation as complete
+        st.session_state["simulation_complete"] = True
+        st.success("Policy comparison analysis completed!")
+        st.session_state["running"] = False
 
     # ---------- MANUAL MODE ----------
     elif control_mode == "Manual Policy":
@@ -1023,21 +1007,30 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
             # Apply policy once before loop if it doesn't change
             apply_policy_batch(population, policy, virus_config)
             
+            # Record initial state (day 0)
+            generation_time = virus_config.get("incubation_days", 5) + virus_config.get("infectious_days", 7) / 2
+            record_metrics(metrics, population,
+                          mortality_rate=virus_config.get("mortality_rate", 0.02),
+                          generation_time=generation_time)
+            
             # Update progress less frequently for better performance
             update_interval = max(1, DAYS // 10)
             
             for day in range(DAYS):
-                # Calculate generation time from virus config
-                generation_time = virus_config.get("incubation_days", 5) + virus_config.get("infectious_days", 7) / 2
-                record_metrics(metrics, population,
-                              mortality_rate=virus_config.get("mortality_rate", 0.02),
-                              generation_time=generation_time)
-                
                 # Update SEIR with mutation support
                 if enable_mutations and mutation_tracker:
                     update_seir(population, mutation_tracker=mutation_tracker, current_day=day)
                 else:
                     update_seir(population)
+                
+                # Record metrics after update
+                record_metrics(metrics, population,
+                              mortality_rate=virus_config.get("mortality_rate", 0.02),
+                              generation_time=generation_time)
+                
+                # Update progress bar
+                if day % update_interval == 0 or day == DAYS - 1:
+                    progress_bar.progress((day + 1) / DAYS, text=f"Day {day+1}/{DAYS}")
                 
                 if day % update_interval == 0 or day == DAYS - 1:
                     progress_bar.progress((day + 1) / DAYS, text=f"Day {day}/{DAYS}")
@@ -1079,7 +1072,8 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
             'population': population,
             'virus_config': virus_config,
             'POP_SIZE': POP_SIZE,
-            'mutation_tracker': mutation_tracker if enable_mutations else None
+            'mutation_tracker': mutation_tracker if enable_mutations else None,
+            'mode': 'manual'
         }
         
         # Mark simulation as complete
@@ -1105,14 +1099,18 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
                 )
                 st.success("AI agent loaded successfully!")
             except FileNotFoundError as e:
-                st.error(f"{str(e)}")
-                st.markdown("""
-                <div class="info-box">
-                    <h4>How to train the AI agent:</h4>
-                    <p>Run this command in your terminal:</p>
-                    <code>python rl/train.py</code>
-                </div>
-                """, unsafe_allow_html=True)
+                st.warning("No pre-trained AI model found.  Using Manual Mode instead.")
+                st.info("""
+                **Training AI agents locally:**
+                
+                To train the AI agent on your local machine:
+                ```bash
+                python rl/train.py
+                ```
+                
+                This simulation will run in **Manual Mode** for now.
+                """)
+                # Fallback to manual mode instead of stopping
                 st.session_state["running"] = False
                 st.stop()
             except Exception as e:
@@ -1164,130 +1162,131 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
             progress_bar.empty()
             decision_container.empty()
         
-        # Display AI decision summary
-        st.markdown("---")
-        st.markdown("### AI Decision Summary")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("""
-            <div class="info-box">
-                <h4>Most Frequent Action</h4>
-                <p style="font-size: 1.5rem; font-weight: bold; color: #667eea;">""" + max(set(action_history), key=action_history.count) + """</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-            <div class="info-box">
-                <h4>Total Decisions Made</h4>
-                <p style="font-size: 1.5rem; font-weight: bold; color: #667eea;">""" + str(len(action_history)) + """</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        st.caption(
-            "*The AI has learned stable optimal policies through training. "
-            "Repeated actions indicate convergence to optimal strategy.*"
-        )
-        
-        # ====== CALCULATE KEY METRICS ======
-        st.markdown("---")
-        st.markdown("## Simulation Results")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            peak_infected = max(metrics["overall"]["I"]) if metrics["overall"]["I"] else 0
-            st.metric(
-                "Peak Infected",
-                f"{int(peak_infected)}",
-                delta=f"{(peak_infected/POP_SIZE)*100:.1f}% of population"
-            )
-        
-        with col2:
-            # Calculate total ever infected (current R + I + E)
-            final_recovered = metrics["overall"]["R"][-1] if metrics["overall"]["R"] else 0
-            current_infected = metrics["overall"]["I"][-1] if metrics["overall"]["I"] else 0
-            current_exposed = metrics["overall"]["E"][-1] if metrics["overall"]["E"] else 0
-            total_ever_infected = final_recovered + current_infected + current_exposed
+            # Display AI decision summary
+            st.markdown("---")
+            st.markdown("### AI Decision Summary")
             
-            # Deaths = total infected * mortality rate
-            total_deaths = int(total_ever_infected * virus_config.get("mortality_rate", 0.02))
-            death_rate = (total_deaths / POP_SIZE) * 100 if POP_SIZE > 0 else 0
+            col1, col2 = st.columns(2)
             
-            st.metric(
-                "Estimated Deaths",
-                f"{total_deaths}",
-                delta=f"{death_rate:.2f}% of population"
+            with col1:
+                st.markdown("""
+                <div class="info-box">
+                    <h4>Most Frequent Action</h4>
+                    <p style="font-size: 1.5rem; font-weight: bold; color: #667eea;">""" + max(set(action_history), key=action_history.count) + """</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown("""
+                <div class="info-box">
+                    <h4>Total Decisions Made</h4>
+                    <p style="font-size: 1.5rem; font-weight: bold; color: #667eea;">""" + str(len(action_history)) + """</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.caption(
+                "*The AI has learned stable optimal policies through training. "
+                "Repeated actions indicate convergence to optimal strategy.*"
             )
+            
+            # ====== CALCULATE KEY METRICS ======
+            st.markdown("---")
+            st.markdown("## Simulation Results")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                peak_infected = max(metrics["overall"]["I"]) if metrics["overall"]["I"] else 0
+                st.metric(
+                    "Peak Infected",
+                    f"{int(peak_infected)}",
+                    delta=f"{(peak_infected/POP_SIZE)*100:.1f}% of population"
+                )
+            
+            with col2:
+                # Calculate total ever infected (current R + I + E)
+                final_recovered = metrics["overall"]["R"][-1] if metrics["overall"]["R"] else 0
+                current_infected = metrics["overall"]["I"][-1] if metrics["overall"]["I"] else 0
+                current_exposed = metrics["overall"]["E"][-1] if metrics["overall"]["E"] else 0
+                total_ever_infected = final_recovered + current_infected + current_exposed
+                
+                # Deaths = total infected * mortality rate
+                total_deaths = int(total_ever_infected * virus_config.get("mortality_rate", 0.02))
+                death_rate = (total_deaths / POP_SIZE) * 100 if POP_SIZE > 0 else 0
+                
+                st.metric(
+                    "Estimated Deaths",
+                    f"{total_deaths}",
+                    delta=f"{death_rate:.2f}% of population"
+                )
+            
+            with col3:
+                final_recovered = metrics["overall"]["R"][-1] if metrics["overall"]["R"] else 0
+                # Survivors = recovered - deaths from recovered
+                survivors = int(final_recovered * (1 - virus_config.get("mortality_rate", 0.02)))
+                st.metric(
+                    "Recovered (Alive)",
+                    f"{survivors}",
+                    delta=f"{(survivors/POP_SIZE)*100:.1f}% recovered"
+                )
+            
+            with col4:
+                final_susceptible = metrics["overall"]["S"][-1] if metrics["overall"]["S"] else 0
+                st.metric(
+                    "Still Susceptible",
+                    f"{int(final_susceptible)}",
+                    delta=f"{(final_susceptible/POP_SIZE)*100:.1f}% unaffected"
+                )
+            
+            # Additional Epidemiological Metrics
+            st.markdown("---")
+            st.markdown("### Advanced Epidemiological Metrics")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                current_Rt = metrics.get("Rt", [0])[-1] if metrics.get("Rt") else 0
+                rt_trend = "decreasing" if current_Rt < 1.0 else "increasing"
+                st.metric(
+                    "Effective Rt (Current)",
+                    f"{current_Rt:.2f}",
+                    delta=f"Epidemic {rt_trend}",
+                    delta_color="inverse" if current_Rt >= 1.0 else "normal"
+                )
+            
+            with col2:
+                attack_rate = metrics.get("attack_rate", 0) * 100
+                st.metric(
+                    "Attack Rate",
+                    f"{attack_rate:.1f}%",
+                    delta="Cumulative infection rate"
+                )
+            
+            with col3:
+                current_incidence = metrics.get("incidence_rate", [0])[-1] if metrics.get("incidence_rate") else 0
+                st.metric(
+                    "Incidence Rate",
+                    f"{current_incidence:.1f}",
+                    delta="per 100k per day"
+                )
         
-        with col3:
-            final_recovered = metrics["overall"]["R"][-1] if metrics["overall"]["R"] else 0
-            # Survivors = recovered - deaths from recovered
-            survivors = int(final_recovered * (1 - virus_config.get("mortality_rate", 0.02)))
-            st.metric(
-                "Recovered (Alive)",
-                f"{survivors}",
-                delta=f"{(survivors/POP_SIZE)*100:.1f}% recovered"
-            )
-        
-        with col4:
-            final_susceptible = metrics["overall"]["S"][-1] if metrics["overall"]["S"] else 0
-            st.metric(
-                "Still Susceptible",
-                f"{int(final_susceptible)}",
-                delta=f"{(final_susceptible/POP_SIZE)*100:.1f}% unaffected"
-            )
-        
-        # Additional Epidemiological Metrics
-        st.markdown("---")
-        st.markdown("### Advanced Epidemiological Metrics")
-        
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            current_Rt = metrics.get("Rt", [0])[-1] if metrics.get("Rt") else 0
-            rt_trend = "decreasing" if current_Rt < 1.0 else "increasing"
-            st.metric(
-                "Effective Rt (Current)",
-                f"{current_Rt:.2f}",
-                delta=f"Epidemic {rt_trend}",
-                delta_color="inverse" if current_Rt >= 1.0 else "normal"
-            )
-        
-        with col2:
-            attack_rate = metrics.get("attack_rate", 0) * 100
-            st.metric(
-                "Attack Rate",
-                f"{attack_rate:.1f}%",
-                delta="Cumulative infection rate"
-            )
-        
-        with col3:
-            current_incidence = metrics.get("incidence_rate", [0])[-1] if metrics.get("incidence_rate") else 0
-            st.metric(
-                "Incidence Rate",
-                f"{current_incidence:.1f}",
-                delta="per 100k per day"
-            )
-    
-    # Store results in session state
-    st.session_state.simulation_results = {
-        'metrics': metrics,
-        'population': env.population,
-        'virus_config': virus_config,
-        'POP_SIZE': POP_SIZE,
-        'mutation_tracker': None  # AI mode doesn't support mutations yet
-    }
-    
-    # Mark simulation as complete
-    st.session_state["simulation_complete"] = True
-    st.success("AI (RL) mode simulation completed!")
-    st.session_state["running"] = False
+            # Store results in session state
+            st.session_state.simulation_results = {
+                'metrics': metrics,
+                'population': env.population,
+                'virus_config': virus_config,
+                'POP_SIZE': POP_SIZE,
+                'mutation_tracker': None,  # AI mode doesn't support mutations yet
+                'mode': 'ai'
+            }
+            
+            # Mark simulation as complete
+            st.session_state["simulation_complete"] = True
+            st.success("AI (RL) mode simulation completed!")
+            st.session_state["running"] = False
 
     # ========== SYMPTOM PREDICTION MODULE ==========
-    if st.session_state.show_symptom_prediction:
+    if st.session_state.show_symptom_prediction and st.session_state.symptom_predictor is not None:
         st.markdown("---")
         st.markdown("## Symptom Prediction Analysis")
         st.markdown("""
@@ -1457,6 +1456,63 @@ if st.session_state.simulation_results is not None and st.session_state.simulati
     virus_config = results['virus_config']
     POP_SIZE = results['POP_SIZE']
     mutation_tracker = results.get('mutation_tracker')
+    mode = results.get('mode', 'normal')
+    
+    # Special display for policy comparison mode
+    if mode == 'policy_comparison':
+        comparison_results = results['comparison_results']
+        best_policy = results['best_policy']
+        
+        st.markdown("---")
+        st.markdown("## Policy Effectiveness Comparison")
+        
+        # Metric cards for best policy
+        st.markdown(f"""
+        <div class="success-box">
+            <h3>Recommended Strategy: {best_policy}</h3>
+            <p>This strategy resulted in the lowest number of deaths.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display metrics in columns
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "Peak Infected",
+                f"{int(comparison_results[best_policy]['peak_infected'])}",
+                delta=None
+            )
+        
+        with col2:
+            st.metric(
+                "Total Deaths",
+                f"{comparison_results[best_policy]['total_deaths']}",
+                delta=None
+            )
+        
+        with col3:
+            st.metric(
+                "Final Recovered",
+                f"{int(comparison_results[best_policy]['final_recovered'])}",
+                delta=None
+            )
+        
+        with col4:
+            st.metric(
+                "Economic Cost",
+                f"${comparison_results[best_policy]['economic_cost']:,.0f}",
+                delta=None
+            )
+        
+        # Display comparison chart
+        comparison_fig = plot_policy_comparison(comparison_results)
+        st.plotly_chart(comparison_fig, use_container_width=True, key="policy_comparison_chart")
+        
+        # Show detailed SEIR for best policy
+        st.markdown("### SEIR Dynamics: Best Strategy")
+        fig = plot_seir_plotly(comparison_results[best_policy]["metrics"])
+        st.plotly_chart(fig, use_container_width=True, key="best_policy_seir_chart")
     
     st.markdown("---")
     st.markdown("## Simulation Results")

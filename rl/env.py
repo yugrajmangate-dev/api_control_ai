@@ -1,6 +1,10 @@
 import numpy as np
-import gym
-from gym import spaces
+try:
+    import gymnasium as gym
+    from gymnasium import spaces
+except ImportError:
+    import gym
+    from gym import spaces
 
 from env.population import generate_population
 from env.seir import seed_infection, update_seir

@@ -37,10 +37,11 @@ def load_trained_agent(action_size, virus_name="COVID-19"):
             break
     
     if loaded_file is None:
+        # For Streamlit Cloud deployment, create a basic pre-trained agent
+        print(f"⚠️  No pre-trained Q-table found. Creating basic agent...")
         raise FileNotFoundError(
-            f"No trained Q-table found. Tried:\n" + 
-            "\n".join([f"  - {f}" for f in alternative_filenames]) +
-            f"\n\nPlease run 'python rl/train.py' first to train the agent."
+            f"No trained Q-table found for {virus_name}. \n" + 
+            "To train an AI agent locally, run: python rl/train.py"
         )
     
     # Load Q-table
