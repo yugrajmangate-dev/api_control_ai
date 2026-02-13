@@ -4,7 +4,8 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
+# Virtual environments (but NOT our env/ source code folder)
+# env/  # COMMENTED OUT - we have a source folder named env/
 .venv/
 venv/
 ENV/

@@ -6,10 +6,13 @@ Team Neural Nexus
 import streamlit as st
 import json
 import sys
+import os
 from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# Add current directory and parent directory to path for imports
+current_dir = Path(__file__).resolve().parent
+if str(current_dir) not in sys.path:
+    sys.path.insert(0, str(current_dir))
 
 # Track which features are available
 FEATURES_AVAILABLE = {
@@ -36,8 +39,18 @@ try:
     from translations import get_translation, TRANSLATIONS, get_language_name
     from chatbot import AdvancedChatbot
 except ImportError as e:
+    import traceback
     st.error(f"Critical Import Error: {str(e)}")
-    st.info("Please install required packages: pip install streamlit numpy pandas matplotlib plotly")
+    with st.expander("Debug Information"):
+        st.write(f"**Error Type:** {type(e).__name__}")
+        st.write(f"**Current Directory:** {os.getcwd()}")
+        st.write(f"**Script Location:** {Path(__file__).resolve()}")
+        st.write(f"**Python Path:**")
+        for p in sys.path[:5]:
+            st.write(f"  - {p}")
+        st.code(traceback.format_exc())
+    st.info("Please ensure all required packages are installed and project files are present.")
+    st.info("Required: streamlit, numpy, pandas, matplotlib, plotly, gymnasium, torch")
     st.stop()
 
 # Optional imports - RL features
