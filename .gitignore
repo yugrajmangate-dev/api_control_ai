@@ -4,36 +4,28 @@ __pycache__/
 *$py.class
 *.so
 .Python
-# Virtual environments (but NOT our env/ source code folder)
-# env/  # COMMENTED OUT - we have a source folder named env/
-.venv/
-venv/
-ENV/
 *.egg-info/
 dist/
 build/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# Virtual environments (env/ is source code, not a venv)
+.venv/
+venv/
+ENV/
 
-# VS Code
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs
 .vscode/
-
-# PyCharm
 .idea/
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Streamlit
+# Streamlit secrets
 .streamlit/secrets.toml
 
-# Data files (optional - comment out if you want to include)
-# *.csv
-# *.json
-# *.pkl
-
-# Test files
-test_*.py
-*_test.py
+# Trained model artifacts
+*.pkl
