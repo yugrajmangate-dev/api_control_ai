@@ -42,13 +42,14 @@ def record_metrics(metrics, population, mortality_rate=0.0, generation_time=5.0)
     new_infections = current_infections - prev_cumulative
     metrics["new_infections_per_day"].append(new_infections)
     
-    # Calculate Rt (effective reproduction number) using exponential growth method
-    # Rt = (I_t / I_(t-τ))^(τ/generation_time) where τ is the time window
+    # Calculate Rt (effective reproduction number) using ratio method
+    # Rt ≈ I(t) / I(t - generation_time) — ratio of prevalent infections
+    # one generation interval apart (Wallinga-Lipsitch approximation)
     if len(metrics["overall"]["I"]) >= int(generation_time) + 1:
         current_I = state_counts["I"]
         past_I = metrics["overall"]["I"][-int(generation_time)]
         if past_I > 0 and current_I > 0:
-            Rt = (current_I / past_I) ** (generation_time / generation_time)
+            Rt = current_I / past_I
             # Cap Rt at reasonable bounds
             Rt = max(0.0, min(Rt, 10.0))
         else:

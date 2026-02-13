@@ -1156,14 +1156,17 @@ if st.session_state["running"] and not st.session_state.get("simulation_complete
                     decision_container.info(f"Day {day}: AI chose → **{action_map[action]}**")
                     progress_bar.progress(min(day / DAYS, 1.0), text=f"Day {day}/{DAYS}")
 
-                obs, reward, done, _ = env.step(action)
+                # Pass mutation_tracker to env.step so update_seir handles mutations internally
+                obs, reward, done, _ = env.step(
+                    action,
+                    mutation_tracker=mutation_tracker if enable_mutations else None,
+                    current_day=day
+                )
                 state = discretize_state(obs)
 
-                record_metrics(metrics, env.population)
-                
-                # Apply mutations in RL mode too
-                if enable_mutations and mutation_tracker:
-                    update_seir(env.population, mutation_tracker=mutation_tracker, current_day=day)
+                record_metrics(metrics, env.population,
+                              mortality_rate=virus_config.get("mortality_rate", 0.02),
+                              generation_time=virus_config.get("incubation_days", 5) + virus_config.get("infectious_days", 7) / 2)
                 
                 day += 1
             

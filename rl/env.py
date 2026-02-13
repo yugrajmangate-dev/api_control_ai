@@ -53,13 +53,13 @@ class EpiControlEnv(gym.Env):
         return self._get_observation()
 
     # ----------------------------------------------------
-    def step(self, action):
+    def step(self, action, mutation_tracker=None, current_day=None):
         policy = self._action_to_policy(action)
 
-        apply_policy_batch(self.population, policy)
+        apply_policy_batch(self.population, policy, virus_config=self.virus_config)
 
         record_metrics(self.metrics, self.population)
-        update_seir(self.population)
+        update_seir(self.population, mutation_tracker=mutation_tracker, current_day=current_day or self.current_day)
 
         reward = self._calculate_reward(policy)
 
@@ -85,7 +85,7 @@ class EpiControlEnv(gym.Env):
         )
 
         hospital_load = adult_inf / total
-        econ_cost = self.total_cost
+        econ_cost = min(self.total_cost, 1.0)  # Clip to observation space bounds [0, 1]
 
         return np.array([
             infected / total,
