@@ -1649,6 +1649,140 @@ if st.session_state.simulation_results is not None and st.session_state.simulati
 elif not st.session_state.simulation_complete:
     st.info("👈 Configure parameters in the sidebar and click 'Run Simulation' to begin")
 
+# ========== SYMPTOM PREDICTION (persisted after simulation) ==========
+if st.session_state.simulation_complete and st.session_state.show_symptom_prediction and st.session_state.symptom_predictor is not None:
+    results = st.session_state.simulation_results
+    virus_config = results['virus_config']
+    # Determine virus name from session
+    _virus_name = virus_name if 'virus_name' in dir() else "Unknown"
+
+    st.markdown("---")
+    st.markdown("## Symptom Prediction Analysis")
+    st.markdown("""
+    <div class="info-box">
+        <h4>Evidence-Based Symptom Forecasting</h4>
+        <p>This module analyzes the epidemiological parameters of the current pathogen and compares them with 
+        historical pandemic data (COVID-19, SARS, MERS, H1N1, Ebola, Seasonal Flu) to predict probable symptom 
+        patterns and severity distributions.</p>
+        <p><strong>Methodology:</strong> Comparative analysis using the 3M approach (Monitoring-Modelling-Managing) 
+        with weighted similarity scoring across transmission rate, incubation period, severity, and other key indicators.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    prediction_params = {
+        'r0': virus_config.get('R0', 2.0),
+        'incubation_period': virus_config.get('incubation_days', 5.0),
+        'case_fatality_rate': virus_config.get('mortality_rate', 0.02) * 100,
+        'serial_interval': virus_config.get('infectious_days', 7.0) * 0.6,
+        'hospitalization_rate': virus_config.get('mortality_rate', 0.02) * 500,
+        'asymptomatic_rate': 20.0
+    }
+
+    predictor = st.session_state.symptom_predictor
+    prediction_report = predictor.generate_prediction_report(prediction_params, virus_name=_virus_name)
+
+    st.markdown(f"### Predictive Analysis for: **{_virus_name}**")
+
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Transmissibility", prediction_report['transmissibility_category'],
+                  f"R₀ = {prediction_params['r0']:.2f}")
+    with col2:
+        st.metric("Severity", prediction_report['severity_category'],
+                  f"CFR = {prediction_params['case_fatality_rate']:.2f}%")
+    with col3:
+        st.metric("Prediction Confidence", f"{prediction_report['overall_confidence']:.0f}%",
+                  "Based on similarity")
+    with col4:
+        top_match = prediction_report['similar_historical_pandemics'][0]
+        st.metric("Closest Match", top_match[0], f"{top_match[1]:.0f}% similar")
+
+    st.markdown("---")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("#### Primary Symptoms (Expected)")
+        primary_symptoms = prediction_report['symptom_predictions']['primary']
+        if primary_symptoms:
+            for symptom in primary_symptoms[:5]:
+                st.markdown(f"""
+                <div class="metric-card">
+                    <h5>{symptom['name']}</h5>
+                    <p><strong>Predicted Prevalence:</strong> {symptom['predicted_prevalence']:.1f}%</p>
+                    <p><strong>Severity:</strong> {symptom['severity'].capitalize()}</p>
+                    <p><strong>Expected Onset:</strong> Day {symptom['predicted_onset_day']:.1f}</p>
+                    <p><strong>Confidence:</strong> {symptom['confidence']:.0f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("No primary symptoms predicted with high confidence")
+
+    with col2:
+        st.markdown("#### Secondary Symptoms (Possible)")
+        secondary_symptoms = prediction_report['symptom_predictions']['secondary']
+        if secondary_symptoms:
+            for symptom in secondary_symptoms[:5]:
+                st.markdown(f"""
+                <div class="metric-card">
+                    <h5>{symptom['name']}</h5>
+                    <p><strong>Predicted Prevalence:</strong> {symptom['predicted_prevalence']:.1f}%</p>
+                    <p><strong>Severity:</strong> {symptom['severity'].capitalize()}</p>
+                    <p><strong>Expected Onset:</strong> Day {symptom['predicted_onset_day']:.1f}</p>
+                    <p><strong>Confidence:</strong> {symptom['confidence']:.0f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("No secondary symptoms predicted with sufficient prevalence")
+
+    st.markdown("---")
+    st.markdown("#### Potential Severe Complications")
+    severe_complications = prediction_report['symptom_predictions']['severe_complications']
+    if severe_complications:
+        comp_cols = st.columns(min(len(severe_complications), 4))
+        for idx, comp in enumerate(severe_complications[:4]):
+            with comp_cols[idx]:
+                st.markdown(f"""
+                <div class="warning-box">
+                    <h5>{comp['name']}</h5>
+                    <p><strong>Risk Level:</strong> {comp['risk'].capitalize()}</p>
+                    <p><strong>Est. Prevalence:</strong> {comp['estimated_prevalence']:.1f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("#### Similar Historical Pandemics")
+    for pandemic_name, similarity in prediction_report['similar_historical_pandemics']:
+        pandemic_data = HISTORICAL_PANDEMICS[pandemic_name]
+        with st.expander(f"{pandemic_name} - {similarity:.1f}% Match"):
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.write(f"**Year:** {pandemic_data['year']}")
+                st.write(f"**Virus Type:** {pandemic_data['virus_type']}")
+                st.write(f"**R₀:** {pandemic_data['epidemiology']['r0']:.2f}")
+            with col2:
+                st.write(f"**CFR:** {pandemic_data['epidemiology']['case_fatality_rate']:.2f}%")
+                st.write(f"**Incubation:** {pandemic_data['epidemiology']['incubation_period']:.1f} days")
+                st.write(f"**Hospitalization:** {pandemic_data['epidemiology']['hospitalization_rate']:.1f}%")
+            with col3:
+                st.write(f"**Primary Route:** {pandemic_data['transmission']['primary_route'].replace('_', ' ').title()}")
+                st.write(f"**Mutation Rate:** {pandemic_data['mutation_behavior']['mutation_rate'].title()}")
+                st.write(f"**Superspreading:** {'Yes' if pandemic_data['transmission']['superspreading_events'] else 'No'}")
+
+    st.markdown("---")
+    st.markdown("#### Key Insights & Recommendations")
+    for insight in prediction_report['insights']:
+        st.markdown(f"- {insight}")
+
+    st.markdown("---")
+    st.markdown(f"""
+    <div class="warning-box">
+        <h4>Important Disclaimer</h4>
+        <p>{prediction_report['disclaimer']}</p>
+        <p><strong>Data Sources:</strong> WHO reports, CDC databases, peer-reviewed epidemiological research</p>
+        <p><strong>Model Basis:</strong> Comparative analysis with 6 major historical pandemics</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 # ==================== INFORMATION FOOTER ====================
 st.markdown("---")
 
