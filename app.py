@@ -1,6 +1,6 @@
 """
 EpiControl AI - Professional Epidemic Simulation & Control Platform
-Team Neural Nexus
+Team Neural Mavericks
 """
 
 import streamlit as st
@@ -84,7 +84,7 @@ except ImportError as e:
 
 # ==================== PAGE CONFIGURATION ====================
 st.set_page_config(
-    page_title="EpiControl AI | Neural Nexus",
+    page_title="EpiControl AI | Neural Mavericks",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -556,7 +556,7 @@ st.markdown("""
 <div class="title-container">
     <h1 class="main-title">EpiControl AI</h1>
     <p class="subtitle">Advanced Epidemic Intelligence Platform | SEIR Modeling + Mutation Dynamics + AI Control</p>
-    <div class="team-badge">Team Neural Nexus</div>
+    <div class="team-badge">Team Neural Mavericks</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1874,7 +1874,7 @@ with tab3:
     ### Project Information
     
     **Project:** EpiControl AI - Advanced Epidemic Simulation Platform  
-    **Team:** Neural Nexus  
+    **Team:** Neural Mavericks  
     
     ### Technology Stack
     - **Backend:** Python 3.8+, NumPy
@@ -1883,7 +1883,7 @@ with tab3:
     - **Modeling:** Agent-based SEIR simulation
     
     ### Contact
-    For questions or collaboration opportunities, contact Team Neural Nexus.
+    For questions or collaboration opportunities, contact Team Neural Mavericks.
     
     ### License
     This project is developed for educational and research purposes.
@@ -1894,7 +1894,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <div style="text-align: center; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 8px;">
     <small><b>EpiControl AI</b><br>
-    Team Neural Nexus<br>
+    Team Neural Mavericks<br>
     </small>
 </div>
 """, unsafe_allow_html=True)

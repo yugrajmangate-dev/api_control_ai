@@ -162,7 +162,7 @@ Run from the project root directory where `app.py` is located. Install all depen
 
 ## Team
 
-**Team Neural Nexus** — PRAKALP 2026, Hope Foundation's I²IT, Pune
+**Team Neural Mavericks** — PRAKALP 2026, Hope Foundation's I²IT, Pune
 
 - Team Lead: Parth Bhad (parthbhad2@gmail.com)
 
