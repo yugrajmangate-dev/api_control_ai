@@ -1,6 +1,7 @@
 """
 Multi-language translations for EpiControl AI Dashboard
-Supports: English, Spanish, French, German, Hindi, Chinese (Simplified)
+Supports: English, Spanish, French, German, Hindi, Chinese (Simplified),
+          Kannada, Marathi, Tamil, Telugu, Gujarati, Arabic, Japanese, Korean, Portuguese, Russian
 """
 
 TRANSLATIONS = {
@@ -360,6 +361,131 @@ TRANSLATIONS = {
         "manual_desc": "તમે બધા હસ્તક્ષેપોને નિયંત્રિત કરો છો",
         "ai_mode": "🤖 AI મોડ",
         "ai_desc": "પ્રશિક્ષિત Q-Learning એજન્ટ શ્રેષ્ઠ નિર્ણયો લે છે",
+    },
+
+    "ar": {
+        # Arabic translations
+        "app_title": "🧬 EpiControl AI",
+        "app_subtitle": "منصة ذكاء الأوبئة المتقدمة | نمذجة SEIR + ديناميكيات الطفرات + التحكم بالذكاء الاصطناعي",
+        "control_panel": "⚙️ لوحة التحكم",
+        "simulation_params": "📊 معلمات المحاكاة",
+        "population_label": "👥 السكان",
+        "days_label": "📅 الأيام",
+        "pathogen_selection": "🦠 اختيار العامل الممرض",
+        "data_source": "📚 مصدر البيانات",
+        "virus_select": "🧬 اختر العامل الممرض",
+        "who_virus": "🌍 عامل ممرض من منظمة الصحة العالمية",
+        "mutation_dynamics": "🧬 ديناميكيات الطفرات",
+        "enable_mutations": "✅ تفعيل طفرات الفيروس",
+        "manual_interventions": "📋 التدخلات اليدوية",
+        "interventions_note": "نشط فقط في الوضع اليدوي",
+        "control_strategy": "🤖 استراتيجية التحكم",
+        "visualization": "🗺️ التصور",
+        "run_button": "▶️ تشغيل المحاكاة",
+        "manual_mode": "🎮 الوضع اليدوي",
+        "manual_desc": "أنت تتحكم في جميع التدخلات",
+        "ai_mode": "🤖 وضع الذكاء الاصطناعي",
+        "ai_desc": "وكيل Q-Learning المدرب يتخذ قرارات مثالية",
+    },
+
+    "ja": {
+        # Japanese translations
+        "app_title": "🧬 EpiControl AI",
+        "app_subtitle": "高度疫病インテリジェンスプラットフォーム | SEIRモデリング + 変異動態 + AI制御",
+        "control_panel": "⚙️ コントロールパネル",
+        "simulation_params": "📊 シミュレーションパラメータ",
+        "population_label": "👥 人口",
+        "days_label": "📅 日数",
+        "pathogen_selection": "🦠 病原体選択",
+        "data_source": "📚 データソース",
+        "virus_select": "🧬 病原体を選択",
+        "who_virus": "🌍 WHO病原体",
+        "mutation_dynamics": "🧬 変異動態",
+        "enable_mutations": "✅ ウイルス変異を有効化",
+        "manual_interventions": "📋 手動介入",
+        "interventions_note": "手動モードでのみ有効",
+        "control_strategy": "🤖 制御戦略",
+        "visualization": "🗺️ 可視化",
+        "run_button": "▶️ シミュレーション実行",
+        "manual_mode": "🎮 手動モード",
+        "manual_desc": "すべての介入をあなたが制御します",
+        "ai_mode": "🤖 AIモード",
+        "ai_desc": "訓練されたQ-Learningエージェントが最適な決定を行います",
+    },
+
+    "ko": {
+        # Korean translations
+        "app_title": "🧬 EpiControl AI",
+        "app_subtitle": "고급 전염병 인텔리전스 플랫폼 | SEIR 모델링 + 돌연변이 역학 + AI 제어",
+        "control_panel": "⚙️ 제어판",
+        "simulation_params": "📊 시뮬레이션 매개변수",
+        "population_label": "👥 인구",
+        "days_label": "📅 일수",
+        "pathogen_selection": "🦠 병원체 선택",
+        "data_source": "📚 데이터 소스",
+        "virus_select": "🧬 병원체 선택",
+        "who_virus": "🌍 WHO 병원체",
+        "mutation_dynamics": "🧬 돌연변이 역학",
+        "enable_mutations": "✅ 바이러스 돌연변이 활성화",
+        "manual_interventions": "📋 수동 개입",
+        "interventions_note": "수동 모드에서만 활성",
+        "control_strategy": "🤖 제어 전략",
+        "visualization": "🗺️ 시각화",
+        "run_button": "▶️ 시뮬레이션 실행",
+        "manual_mode": "🎮 수동 모드",
+        "manual_desc": "모든 개입을 사용자가 제어합니다",
+        "ai_mode": "🤖 AI 모드",
+        "ai_desc": "훈련된 Q-Learning 에이전트가 최적의 결정을 내립니다",
+    },
+
+    "pt": {
+        # Portuguese translations
+        "app_title": "🧬 EpiControl AI",
+        "app_subtitle": "Plataforma Avançada de Inteligência Epidêmica | Modelagem SEIR + Dinâmica de Mutações + Controle IA",
+        "control_panel": "⚙️ Painel de Controle",
+        "simulation_params": "📊 Parâmetros de Simulação",
+        "population_label": "👥 População",
+        "days_label": "📅 Dias",
+        "pathogen_selection": "🦠 Seleção de Patógeno",
+        "data_source": "📚 Fonte de Dados",
+        "virus_select": "🧬 Selecionar Patógeno",
+        "who_virus": "🌍 Patógeno OMS",
+        "mutation_dynamics": "🧬 Dinâmica de Mutações",
+        "enable_mutations": "✅ Ativar Mutações do Vírus",
+        "manual_interventions": "📋 Intervenções Manuais",
+        "interventions_note": "Ativo apenas no Modo Manual",
+        "control_strategy": "🤖 Estratégia de Controle",
+        "visualization": "🗺️ Visualização",
+        "run_button": "▶️ Executar Simulação",
+        "manual_mode": "🎮 Modo Manual",
+        "manual_desc": "Você controla todas as intervenções",
+        "ai_mode": "🤖 Modo IA",
+        "ai_desc": "Agente Q-Learning treinado toma decisões ótimas",
+    },
+
+    "ru": {
+        # Russian translations
+        "app_title": "🧬 EpiControl AI",
+        "app_subtitle": "Продвинутая платформа эпидемиологической разведки | SEIR-моделирование + Динамика мутаций + ИИ-управление",
+        "control_panel": "⚙️ Панель управления",
+        "simulation_params": "📊 Параметры моделирования",
+        "population_label": "👥 Население",
+        "days_label": "📅 Дни",
+        "pathogen_selection": "🦠 Выбор патогена",
+        "data_source": "📚 Источник данных",
+        "virus_select": "🧬 Выбрать патоген",
+        "who_virus": "🌍 Патоген ВОЗ",
+        "mutation_dynamics": "🧬 Динамика мутаций",
+        "enable_mutations": "✅ Включить мутации вируса",
+        "manual_interventions": "📋 Ручные вмешательства",
+        "interventions_note": "Активно только в ручном режиме",
+        "control_strategy": "🤖 Стратегия управления",
+        "visualization": "🗺️ Визуализация",
+        "run_button": "▶️ Запустить моделирование",
+        "manual_mode": "🎮 Ручной режим",
+        "manual_desc": "Вы управляете всеми вмешательствами",
+        "ai_mode": "🤖 Режим ИИ",
+        "ai_desc": "Обученный Q-Learning агент принимает оптимальные решения",
     }
 }
 
@@ -380,6 +506,11 @@ def get_language_name(code: str) -> str:
         "mr": "मराठी",
         "ta": "தமிழ்",
         "te": "తెలుగు",
-        "gu": "ગુજરાતી"
+        "gu": "ગુજરાતી",
+        "ar": "العربية",
+        "ja": "日本語",
+        "ko": "한국어",
+        "pt": "Português",
+        "ru": "Русский"
     }
     return names.get(code, "English")

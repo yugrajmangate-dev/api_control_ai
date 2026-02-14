@@ -1,10 +1,19 @@
 """
-Advanced ChatGPT-like conversational chatbot for EpiControl AI
-Provides intelligent responses about SEIR modeling, visualizations, and simulation features
+Advanced LLM-powered conversational chatbot for EpiControl AI
+Uses Groq API (LLaMA) for intelligent responses about SEIR modeling, visualizations, and simulation features
 """
 
+import os
 import re
 from typing import List, Tuple
+
+try:
+    from groq import Groq
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 
 # Comprehensive knowledge base for the chatbot
 KNOWLEDGE_BASE = {
@@ -164,6 +173,56 @@ KNOWLEDGE_BASE = {
         "general": {
             "answer": "નમસ્તે! હું તમારો EpiControl AI સહાયક છું. હું કેવી રીતે મદદ કરી શકું?"
         }
+    },
+
+    "ar": {
+        "seir_curve": {
+            "keywords": ["seir", "منحنى", "وباء", "تقدم"],
+            "answer": "📈 **شرح منحنى SEIR**\n\nيُظهر منحنى SEIR تطور الوباء عبر الزمن:\n\n• **S**: المعرضون للإصابة\n• **E**: المتعرضون (مصابون لكن غير معديين)\n• **I**: المصابون (معديون)\n• **R**: المتعافون (لديهم مناعة)\n\nماذا يكشف؟\n✓ متى تبلغ العدوى ذروتها\n✓ سرعة الانتشار\n✓ فعالية التدخلات\n\nلاحظ كيف تتسطح المنحنيات مع تدخلات أفضل!"
+        },
+        "general": {
+            "answer": "مرحباً! أنا مساعد EpiControl AI الخاص بك. كيف يمكنني مساعدتك؟"
+        }
+    },
+
+    "ja": {
+        "seir_curve": {
+            "keywords": ["seir", "曲線", "感染", "流行"],
+            "answer": "📈 **SEIR曲線の説明**\n\nSEIR曲線は疫病の進行を示します：\n\n• **S**: 感受性者（感染する可能性あり）\n• **E**: 曝露者（感染しているが感染力なし）\n• **I**: 感染者（感染力あり）\n• **R**: 回復者（免疫あり）\n\n何がわかる？\n✓ 感染がいつピークに達するか\n✓ 拡散速度\n✓ 介入の効果\n\nより良い介入で曲線がどのように平坦化するか観察しましょう！"
+        },
+        "general": {
+            "answer": "こんにちは！EpiControl AIアシスタントです。どのようにお手伝いできますか？"
+        }
+    },
+
+    "ko": {
+        "seir_curve": {
+            "keywords": ["seir", "곡선", "감염", "전염병"],
+            "answer": "📈 **SEIR 곡선 설명**\n\nSEIR 곡선은 전염병의 진행 과정을 보여줍니다:\n\n• **S**: 감수성자 (감염 가능)\n• **E**: 노출자 (감염되었으나 전파력 없음)\n• **I**: 감염자 (전파력 있음)\n• **R**: 회복자 (면역 보유)\n\n무엇을 알 수 있나요?\n✓ 감염이 언제 정점에 도달하는지\n✓ 확산 속도\n✓ 개입의 효과\n\n더 나은 개입으로 곡선이 어떻게 평탄화되는지 관찰하세요!"
+        },
+        "general": {
+            "answer": "안녕하세요! EpiControl AI 어시스턴트입니다. 어떻게 도와드릴까요?"
+        }
+    },
+
+    "pt": {
+        "seir_curve": {
+            "keywords": ["seir", "curva", "progressão", "epidemia"],
+            "answer": "📈 **Explicação da Curva SEIR**\n\nA curva SEIR mostra a progressão da epidemia:\n\n• **S**: Suscetíveis (podem ser infectados)\n• **E**: Expostos (infectados mas não infecciosos)\n• **I**: Infectados (infecciosos)\n• **R**: Recuperados (imunidade)\n\nO que revela?\n✓ Quando as infecções atingem o pico\n✓ Velocidade de propagação\n✓ Eficácia das intervenções\n\nObserve como as curvas se achatam com melhores intervenções!"
+        },
+        "general": {
+            "answer": "Olá! Sou seu assistente EpiControl AI. Como posso ajudar?"
+        }
+    },
+
+    "ru": {
+        "seir_curve": {
+            "keywords": ["seir", "кривая", "эпидемия", "инфекция"],
+            "answer": "📈 **Объяснение кривой SEIR**\n\nКривая SEIR показывает развитие эпидемии:\n\n• **S**: Восприимчивые (могут заразиться)\n• **E**: Контактные (заражены, но не заразны)\n• **I**: Инфицированные (заразны)\n• **R**: Выздоровевшие (иммунитет)\n\nЧто показывает?\n✓ Когда инфекции достигают пика\n✓ Скорость распространения\n✓ Эффективность вмешательств\n\nНаблюдайте, как кривые сглаживаются при лучших вмешательствах!"
+        },
+        "general": {
+            "answer": "Здравствуйте! Я ваш помощник EpiControl AI. Чем могу помочь?"
+        }
     }
 }
 
@@ -173,9 +232,68 @@ class AdvancedChatbot:
         self.language = language
         self.conversation_history: List[Tuple[str, str]] = []
         self.knowledge_base = KNOWLEDGE_BASE.get(language, KNOWLEDGE_BASE["en"])
+        self.groq_client = None
+        if GROQ_AVAILABLE and GROQ_API_KEY:
+            try:
+                self.groq_client = Groq(api_key=GROQ_API_KEY)
+            except Exception:
+                self.groq_client = None
+
+    def _build_system_prompt(self) -> str:
+        """Build a system prompt with knowledge base context"""
+        lang_names = {"en": "English", "es": "Spanish", "fr": "French", "de": "German",
+                      "hi": "Hindi", "zh": "Chinese", "kn": "Kannada", "mr": "Marathi",
+                      "ta": "Tamil", "te": "Telugu", "gu": "Gujarati",
+                      "ar": "Arabic", "ja": "Japanese", "ko": "Korean",
+                      "pt": "Portuguese", "ru": "Russian"}
+        lang_name = lang_names.get(self.language, "English")
+
+        kb_summary = ""
+        for topic, content in self.knowledge_base.items():
+            if "answer" in content:
+                kb_summary += f"\n--- {topic} ---\n{content['answer']}\n"
+
+        return f"""You are the EpiControl AI Assistant, a helpful and knowledgeable chatbot embedded in the EpiControl AI epidemic simulation platform.
+
+Respond in {lang_name}. Be concise but thorough. Use emojis where appropriate to make responses engaging.
+
+Key knowledge about the platform:
+{kb_summary}
+
+Guidelines:
+- Answer questions about SEIR models, epidemic simulation, visualizations, interventions, mutations, AI mode, etc.
+- If the user asks something outside the scope of EpiControl AI, politely redirect them to relevant topics.
+- Keep responses well-formatted with markdown (bold, bullet points, etc.).
+- Be friendly and educational.
+- If you don't know something specific about the platform, use your general epidemiology knowledge to give a helpful answer.
+- If the user writes in a language different from {lang_name}, auto-detect their language and respond in that language instead.
+- You support 16 languages: English, Spanish, French, German, Hindi, Chinese, Kannada, Marathi, Tamil, Telugu, Gujarati, Arabic, Japanese, Korean, Portuguese, and Russian.
+"""
+
+    def _call_groq(self, user_message: str) -> str:
+        """Call Groq API for LLM response"""
+        messages = [{"role": "system", "content": self._build_system_prompt()}]
+
+        # Add recent conversation history (last 10 exchanges for context)
+        for role, msg in self.conversation_history[-20:]:
+            messages.append({
+                "role": "user" if role == "user" else "assistant",
+                "content": msg
+            })
+
+        # Add current user message
+        messages.append({"role": "user", "content": user_message})
+
+        response = self.groq_client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        return response.choices[0].message.content
     
     def find_best_match(self, user_query: str) -> Tuple[str, str]:
-        """Find best knowledge base match for user question"""
+        """Find best knowledge base match for user question (fallback)"""
         query_lower = user_query.lower()
         best_match = ("general", 0)
         
@@ -195,16 +313,22 @@ class AdvancedChatbot:
         return topic, answer
     
     def respond(self, user_message: str) -> str:
-        """Generate response based on user message"""
+        """Generate response using Groq LLM, with keyword fallback"""
         # Add to conversation history
         self.conversation_history.append(("user", user_message))
         
-        # Find best match in knowledge base
+        # Try Groq API first
+        if self.groq_client:
+            try:
+                response = self._call_groq(user_message)
+                self.conversation_history.append(("assistant", response))
+                return response
+            except Exception:
+                pass
+
+        # Fallback to keyword matching
         topic, response = self.find_best_match(user_message)
-        
-        # Add response to history
         self.conversation_history.append(("assistant", response))
-        
         return response
     
     def set_language(self, language: str):
