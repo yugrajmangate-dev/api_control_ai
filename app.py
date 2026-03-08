@@ -4,6 +4,7 @@ Team Neural Mavericks
 """
 
 import streamlit as st
+import boto3
 import json
 import sys
 import os
@@ -573,6 +574,42 @@ with col4:
 
 st.markdown("---")
 
+def analyze_threat_with_bedrock(unstructured_text):
+    client = boto3.client('bedrock-runtime', region_name='us-east-1') # Ensure region is correct
+    prompt = f"""
+    Analyze this intelligence report: \"{unstructured_text}\"
+    Extract the epidemiological parameters. Respond ONLY with a valid JSON object.
+    Required keys: \"R0\" (float), \"incubation_days\" (int), \"infectious_days\" (int), \"mortality_rate\" (float), \"trigger_warning\" (boolean).
+    """
+    body = json.dumps({
+        "anthropic_version": "bedrock-2023-05-31",
+        "max_tokens": 300,
+        "temperature": 0.1,
+        "messages": [
+            {"role": "user", "content": prompt},
+            {"role": "assistant", "content": "{"} # Forces strict JSON
+        ]
+    })
+    try:
+        response = client.invoke_model(modelId="anthropic.claude-3-sonnet-20240229-v1:0", body=body)
+        response_body = json.loads(response.get('body').read())
+        raw_json_str = "{" + response_body['content'][0]['text']
+        return json.loads(raw_json_str)
+    except Exception as e:
+        return {"error": str(e)}
+
+st.header("🚨 Sentinel: Bedrock Early Warning System")
+news_input = st.text_area("Paste News Report:", "e.g., Doctors in Pune report 50 patients with a highly contagious cough spreading to 3 people each. No deaths yet, incubation seems to be 4 days.")
+
+if st.button("Run AWS Bedrock Analysis"):
+    with st.spinner("Analyzing threat..."):
+        result = analyze_threat_with_bedrock(news_input)
+        if "error" not in result:
+            st.success("Threat Analyzed Successfully!")
+            st.json(result)
+        else:
+            st.error(f"Error: {result['error']}")
+
 # ==================== GLOBAL EPIDEMIC MAP ====================
 st.markdown("### Global Epidemic Surveillance Dashboard")
 st.markdown("**Real-time monitoring of epidemic spread across 50+ countries**")
@@ -671,6 +708,10 @@ else:
 # ==================== CHAT INTERFACE ====================
 st.sidebar.markdown("### AI Chat Assistant")
 
+if st.sidebar.button("Clear Chat", key="clear_chat_history"):
+    st.session_state.chatbot.clear_history()
+    st.rerun()
+
 # Chat display area with expander for cleaner UI
 with st.sidebar.expander("Chat History", expanded=True):
     for role, message in st.session_state.chatbot.get_history():
@@ -680,15 +721,20 @@ with st.sidebar.expander("Chat History", expanded=True):
             st.write(f" **AI**: {message}")
 
 # Chat input
-user_input = st.sidebar.text_input(
-    "Ask a question:",
-    placeholder="E.g., 'What is SEIR?'",
-    key="chat_input"
-)
+with st.sidebar.form("chat_input_form", clear_on_submit=True):
+    user_input = st.text_input(
+        "Ask a question:",
+        placeholder="E.g., 'What is SEIR?'",
+        key="chat_input"
+    )
+    submitted = st.form_submit_button("Send")
 
-if user_input:
-    response = st.session_state.chatbot.respond(user_input)
-    st.sidebar.success(f" {response}")
+if submitted and user_input.strip():
+    with st.sidebar.spinner("Thinking..."):
+        response = st.session_state.chatbot.respond(user_input)
+    if response:
+        st.sidebar.success(response)
+    st.rerun()
 
 # ==================== SIDEBAR CONFIGURATION ====================
 st.sidebar.markdown("### Configuration")

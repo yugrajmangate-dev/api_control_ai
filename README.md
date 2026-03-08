@@ -38,6 +38,22 @@ streamlit run app.py
 
 Opens at `http://localhost:8501`.
 
+### AWS Bedrock Chatbot
+
+The in-app chatbot now uses AWS Bedrock Converse. By default it connects to `eu-north-1` and uses this model/inference profile:
+
+`arn:aws:bedrock:eu-north-1:420859418876:inference-profile/eu.anthropic.claude-opus-4-5-20251101-v1:0`
+
+Optional environment variables:
+
+- `BEDROCK_REGION`
+- `BEDROCK_MODEL_ID`
+- `BEDROCK_MAX_TOKENS`
+- `BEDROCK_TEMPERATURE`
+- `BEDROCK_TOP_K`
+
+The app expects valid AWS credentials or an EC2 IAM role with Bedrock access.
+
 ### Train the RL Agent (Optional)
 
 The AI mode requires a pre-trained Q-table. To train locally:
