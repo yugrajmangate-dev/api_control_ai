@@ -3,7 +3,7 @@
 An epidemic simulation and control platform that combines SEIR epidemiological modeling with reinforcement learning for policy optimization. Built for the PRAKALP 2026 Hackathon.
 
 **Live Dashboard:** [https://apicontrolai.streamlit.app](https://apicontrolai.streamlit.app/)
-**AWS Hosting:** [http://13.50.234.196:8501/](http://13.50.234.196:8501/)
+**AWS Hosting:** [http://51.21.228.87:8501/](http://51.21.228.87:8501/)
 **Repository:** [github.com/yugrajmangate-dev/api_control_ai](https://github.com/yugrajmangate-dev/api_control_ai)
 
 ---
