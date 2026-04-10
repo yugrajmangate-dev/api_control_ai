@@ -3,10 +3,10 @@
 ## Project Overview
 
 **Project Name:** EpiControl AI  
-**Team:** Neural Nexus  
-**Event:** PRAKALP 2026 Hackathon  
+**Team:** Neural Mavericks
+**Event:** Hackathon  
 **Version:** 1.0  
-**Date:** January 2026  
+**Date:** 2026  
 **Document Type:** Technical Design Specification
 
 ---
